@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Carosuel</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="basket-carousel">
+    <div><img src="http://placehold.it/200x350"></div>
+    <div><img src="http://placehold.it/200x350"></div>
+    <div><img src="http://placehold.it/200x350"></div>
+    <div><img src="http://placehold.it/200x350"></div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="slick.js"></script>
+<script>
+    $(document).ready(function (){
+        $('.basket-carousel').slick({
+            slideToShow: 3,
+            slideWidth: 200,
+            centerPadding: '0px',
+            draggable: true,
+            easing: 'linear',
+            edgeFriction: 0,
+            fade: false,
+            focusOnSelect: false,
+            infinite: false,
+            initialSlide: 0,
+            lazyLoad: 'ondemand',
+            mobileFirst: false,
+            pauseOnHover: true,
+            pauseOnDotsHover: false,
+            respondTo: 'window',
+            responsive: null,
+            rows: 1,
+            rtl: false,
+            slide: '',
+            slidesPerRow: 1,
+            slidesToShow: 3,
+            slidesToScroll: 1,
+            speed: 500,
+            swipe: true,
+            swipeToSlide: false,
+            touchMove: true,
+            touchThreshold: 5,
+            useCSS: true,
+            variableWidth: false,
+            vertical: false,
+            verticalSwiping: false,
+            waitForAnimate: true
+
+
+        });
+    })
+</script>
+
+</body>
+</html>
