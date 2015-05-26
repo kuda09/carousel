@@ -279,6 +279,7 @@
         }
 
         self.animating = true;
+        ///comment here
 
 
         self.$carousel.trigger('beforeChange', [self, self.currentSlide, animSlide]);
