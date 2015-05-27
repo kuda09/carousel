@@ -43,7 +43,7 @@
         self.swipeLeft = null;
 
 
-        self.options = $.extend({}, defaults, options);
+        self.options = $.extend( defaults, options);
 
         self.currentSlide = self.options.initialSlide;
         self.transformsEnabled = true;
@@ -182,10 +182,6 @@
         }
     };
 
-    Plugin.prototype.getCurrent = Plugin.prototype.carouselCurrentSlide = function () {
-
-        return self.currentSlide;
-    };
 
     Plugin.prototype.changeSlide = function (event, dontAnimate) {
 
@@ -217,7 +213,6 @@
             case 'next':
 
                 slideOffset = indexOffset === 0 ? self.options.slidesToScroll : indexOffset;
-
 
                 if (self.slideCount > self.options.slidesToShow) {
 
@@ -257,7 +252,7 @@
 
         self.currentLeft = self.swipeLeft === null ? slideLeft : self.swipeLeft;
 
-        self.animateSlide(slideLeft, function() {
+        self.animateSlide(targetLeft, function() {
             self.postSlide(targetSlide);
         });
 
@@ -293,8 +288,7 @@
     };
 
     Plugin.prototype.getLeft = function (slideIndex) {
-        var targetLeft,
-            targetSlide;
+        var targetLeft;
 
         self.slideOffset = 0;
 
@@ -320,9 +314,6 @@
 
     Plugin.prototype.updateArrows = function () {
 
-        var centerOffset;
-
-        centerOffset = Math.floor(self.options.slidesToShow / 2);
 
         if (self.options.arrows === true && self.slideCount > self.options.slidesToShow) {
             self.$prevArrow.removeClass('carousel-disabled');
@@ -340,19 +331,6 @@
             }
 
         }
-    };
-
-    Plugin.prototype.getSlideCount = function () {
-
-        var slidesTraversed,
-            swipedSlide,
-            centerOffset;
-
-        centerOffset = self.options.centerMode === true ? self.slideWidth * Math.floor(self.options.slidesToShow / 2) : 0;
-
-
-        return self.options.slidesToScroll;
-
     };
 
     Plugin.prototype.setDimensions = function () {
@@ -373,22 +351,18 @@
     };
 
     Plugin.prototype.setPosition = function () {
-        ;
-
         self.setDimensions();
 
         self.setCSS(self.getLeft(self.currentLeft));
 
         self.$carousel.trigger('setPosition', [self]);
-
     };
 
     Plugin.prototype.setCSS = function (position) {
 
 
         var positionProps = {},
-            x,
-            y;
+            x;
 
         if (self.options.rtl === true) {
             position = -position;
@@ -400,66 +374,18 @@
 
         positionProps[self.positionProp] = position;
 
-
-        if (self.transformsEnabled === false) {
-            self.$slideTrack.css(positionProps);
-        } else {
-            positionProps = {};
-            if (self.cssTransitions === false) {
-                positionProps[self.animType] = 'translate(' + x + ', 0px' + ')';
-                self.$slideTrack.css(positionProps);
-            } else {
-                positionProps[self.animType] = 'translate3d(' + x + ', 0px' + ', 0px)';
-                self.$slideTrack.css(positionProps);
-            }
-        }
+        self.$slideTrack.css(positionProps);
 
     };
 
     Plugin.prototype.animateSlide = function (targetLeft, callback) {
 
-
-        var animProps = {};
-
-
         if (self.options.rtl === true) {
             targetLeft = -targetLeft;
         }
-
-        if (self.transformsEnabled === false) {
-            self.$slideTrack.animate({
+        self.$slideTrack.animate({
                 left: targetLeft
             }, self.options.speed, self.options.easing, callback);
-        } else {
-            self.applyTransition();
-
-            targetLeft = Math.ceil(targetLeft);
-            animProps[self.animType] = 'translate3d(' + targetLeft + 'px, 0px, 0px';
-
-            self.$slideTrack.css(animProps);
-
-            if (callback) {
-                setTimeout(function () {
-
-                    callback.call();
-                }, self.options.speed);
-            }
-
-        }
-    };
-
-    Plugin.prototype.applyTransition = function (slide) {
-
-
-        var transition = {};
-
-
-        transition[self.transitionType] = self.transformType + ' ' + self.options.speed + 'ms ' + self.options.cssEase;
-
-
-        self.$slideTrack.css(transition);
-
-
     };
 
     Plugin.prototype.postSlide = function (index) {
