@@ -3,19 +3,33 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title>Carosuel</title>
-    <link rel="stylesheet" href="style.css"/>
+    <link rel="stylesheet" href="trans.css"/>
 </head>
 <body>
 
-<div class="basket-carousel">
-    <div><img src="http://placehold.it/200x350"></div>
-    <div><img src="http://placehold.it/200x350"></div>
-    <div><img src="http://placehold.it/200x350"></div>
-    <div><img src="http://placehold.it/200x350"></div>
+<div class="wrapper">
+
+    <div class="basket-carousel">
+        <div class="inner">
+            <div class="slide active">
+                <h1>1</h1>
+            </div>
+            <div class="slide">
+                <h1>2</h1>
+            </div>
+            <div class="slide">
+                <h1>3</h1>
+            </div>
+        </div>
+        <div class="arrow arrow-left"></div>
+        <div class="arrow arrow-right"></div>
+    </div>
+
 </div>
 
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-<script src="bCarousel.js"></script>
+<script src="slider.js"></script>
 <script>
     $(document).ready(function (){
         $('.basket-carousel').bCarousel();

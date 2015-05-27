@@ -43,6 +43,10 @@
         self.options = $.extend( defaults, options);
 
         self.currentSlide = self.options.initialSlide;
+        self.positionProp = 'left';
+
+        self.changeSlide = $.proxy(self.changeSlide, self);
+        self.setPosition = $.proxy(self.setPosition, self);
         self.init();
     }
 
@@ -53,9 +57,8 @@
 
             //all the methods that will be applied here
             self.buildOut();
+            self.loadSlider();
             self.initializeEvents();
-
-
 
             self.$carousel.trigger('init', [self]);
         }
@@ -77,8 +80,7 @@
         });
 
         self.buildArrows();
-        self.setSlideClasses(self.currentSlide);
-        self.setDimensions();
+        self.setSlideClasses(typeof self.currentSlide === 'number' ? self.currentSlide : 0);
     }
 
     Plugin.prototype.setDimensions = function (){
@@ -86,9 +88,18 @@
         self.$slideTrack.width(self.slideCount * self.options.slideWidth);
         self.$list.width(self.options.slidesToShow * self.options.slideWidth);
 
+        self.$listWidth = self.$list.width();
+
+        self.slideWidth = Math.ceil(self.$listWidth / self.options.slidesToShow);
+        self.$slideTrack.width(Math.ceil((self.slideWidth * self.$slideTrack.children('.carousel-slide').length)));
+
+        var offset = self.$slides.first().outerWidth(true) - self.$slides.first().width();
+
+        self.$slideTrack.children('.carousel-slide').width(self.slideWidth - offset);
+
     }
 
-    Plugin.prototype.buildArrows = function (index){
+    Plugin.prototype.buildArrows = function (){
 
         if(self.options.arrows === true && self.slideCount > self.options.slidesToShow){
 
@@ -107,8 +118,35 @@
 
     Plugin.prototype.setSlideClasses = function (index){
 
+        var centerOffset,
+            allSlides,
+            indexOffset,
+            remainder;
+
+
+        self.$carousel.find('.carousel-slide').removeClass('carousel-active').attr('aria-hidden', 'true').removeClass('carousel-center');
+        allSlides = self.$carousel.find('.carousel-slide');
+
+        if (self.options.centerMode === true) {
+
+            centerOffset = Math.floor(self.options.slidesToShow / 2);
+
+            self.$carousel.eq(index).addClass('carousel-center');
+
+        }
+
         if (index >= 0 && index <= (self.slideCount - self.options.slidesToShow)) {
             self.$slides.slice(index, index + self.options.slidesToShow).addClass('carousel-active').attr('aria-hidden', 'false');
+        } else if (allSlides.length <= self.options.slidesToShow) {
+            allSlides.addClass('carousel-active').attr('aria-hidden', 'false');
+        } else {
+            remainder = self.slideCount % self.options.slidesToShow;
+            indexOffset = index;
+            if (self.options.slidesToShow == self.options.slidesToScroll && (self.slideCount - index) < self.options.slidesToShow) {
+                allSlides.slice(indexOffset - (self.options.slidesToShow - remainder), indexOffset + remainder).addClass('carousel-active').attr('aria-hidden', 'false');
+            } else {
+                allSlides.slice(indexOffset, indexOffset + self.options.slidesToShow).addClass('carousel-active').attr('aria-hidden', 'false');
+            }
         }
 
     }
@@ -135,6 +173,9 @@
         if ($target.is('a')) {
             event.preventDefault();
         }
+
+
+
         switch (event.data.message) {
 
             case 'previous':
@@ -181,15 +222,44 @@
 
         if(index < 0){
             targetSlide = self.currentSlide;
-            self.animateSlide(slideLeft);
+            self.animateSlide(slideLeft, function(){
+                self.postSlide(targetSlide)
+            });
         } else if (index < 0 || index < (self.slideCount - self.options.slidesToScroll)){
             targetSlide = self.currentSlide;
-            self.animateSlide(slideLeft);
+            self.animateSlide(slideLeft, function (){
+                self.postSlide(targetSlide);
+            });
+        }
+
+        if (targetSlide < 0) {
+
+            if (self.slideCount % self.options.slidesToScroll !== 0) {
+                animSlide = self.slideCount - (self.slideCount % self.options.slidesToScroll);
+            } else {
+                animSlide = self.slideCount + targetSlide;
+            }
+        } else if (targetSlide >= self.slideCount) {
+            if (self.slideCount % self.options.slidesToScroll !== 0) {
+                animSlide = 0;
+            } else {
+                animSlide = targetSlide - self.slideCount;
+            }
+        } else {
+            animSlide = targetSlide;
         }
 
 
-    }
+        self.currentSlide = animSlide;
 
+        self.setSlideClasses(self.currentSlide);
+
+        self.updateArrows();
+
+
+        self.animateSlide(targetLeft);
+
+    }
 
     Plugin.prototype.getLeft = function (slideIndex){
 
@@ -212,8 +282,7 @@
         return targetLeft; //200
     }
 
-
-    Plugin.prototype.animateSlide = function (targetLeft) {
+    Plugin.prototype.animateSlide = function (targetLeft , callback) {
 
         if (self.options.rtl === true) {
             targetLeft = -targetLeft;
@@ -221,12 +290,65 @@
 
         self.$slideTrack.animate({
             left: targetLeft
-        }, self.options.speed, self.options.easing);
+        }, self.options.speed, self.options.easing, callback);
     };
 
+    Plugin.prototype.postSlide = function (index){
+
+        self.setPosition();
+    }
+
+    Plugin.prototype.setPosition = function (){
+
+        self.setDimensions();
+
+        self.setCSS(self.getLeft(self.currentSlide)); // set the position of the css class according to the current slide
+
+        self.$carousel.trigger('setPosition', [self]); //trigger set positions
+    }
+
+    Plugin.prototype.setCSS = function (position){
+
+        var positionProps = {},
+            x;
+
+        if (self.options.rtl === true) {
+            position = -position;
+        }
 
 
+        x = self.positionProp == 'left' ? Math.ceil(position) + 'px' : '0px';
 
+
+        positionProps[self.positionProp] = position;
+
+        self.$slideTrack.css(positionProps);
+    }
+
+    Plugin.prototype.loadSlider = function (){
+        self.setPosition();
+    }
+
+    Plugin.prototype.updateArrows = function () {
+
+
+        if (self.options.arrows === true && self.slideCount > self.options.slidesToShow) {
+            self.$prevArrow.removeClass('carousel-disabled');
+            self.$nextArrow.removeClass('carousel-disabled');
+
+            if (self.currentSlide === 0) {
+                self.$prevArrow.addClass('carousel-disabled');
+                self.$nextArrow.removeClass('carousel-disabled');
+            } else if (self.currentSlide >= self.slideCount - self.options.slidesToShow && self.options.centerMode === false) {
+                self.$nextArrow.addClass('carousel-disabled');
+                self.$prevArrow.removeClass('carousel-disabled');
+            } else if (self.currentSlide >= self.slideCount - 1 && self.options.centerMode === true) {
+                self.$nextArrow.addClass('carousel-disabled');
+                self.$prevArrow.removeClass('carousel-disabled');
+            }
+
+        }
+    };
 
     $.fn[pluginName] = function (options) {
         return this.each(function () {
@@ -237,5 +359,4 @@
         });
     };
 
-})
-(jQuery, window, document);
+})(jQuery, window, document);
