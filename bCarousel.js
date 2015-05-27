@@ -257,7 +257,9 @@
         self.updateArrows();
 
 
-        self.animateSlide(targetLeft);
+        self.animateSlide(targetLeft, function (){
+            self.postSlide(animSlide);
+        });
 
     }
 

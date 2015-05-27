@@ -64,6 +64,10 @@
     content: '';
 }
 
+.carousel-disabled {
+    display: none;
+}
+
 .carousel-track:after {
     clear: both;
 }
